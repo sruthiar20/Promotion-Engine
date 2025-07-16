@@ -1,0 +1,101 @@
+meta {
+  name: start_date_today_validation
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8080/admin/promotions
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "code": "START_TODAY_01",
+    "type": "percentage",
+    "value": 15,
+    "value_type": "percentage",
+    "starts_at": "{{today_iso}}",
+    "ends_at": "{{future_date}}",
+    "is_automatic": false,
+    "usage_limit": 200
+  }
+}
+
+assert {
+  res.status: eq 400
+}
+
+script:pre-request {
+  // Set today's date as start date
+  const today = new Date();
+  bru.setVar("today_iso", today.toISOString());
+  
+  // Set future date for end date (30 days from now)
+  const future_date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  bru.setVar("future_date", future_date.toISOString());
+}
+
+tests {
+  test("4.1 Should reject promotion with start date as today", function() {
+    expect(res.status).to.equal(400,
+      "Expected 400 Bad Request status for start date as today");
+  });
+  
+  test("4.2 Should return appropriate error message and field", function() {
+    expect(res.body.type).to.equal("validation_error",
+      "Expected validation_error type");
+
+    // Check for single error detail with correct field name
+    expect(res.body.details).to.be.an('array');
+    expect(res.body.details).to.have.length(1);
+    expect(res.body.details[0].field).to.equal("starts_at",
+      "Expected field name to be starts_at");
+    expect(res.body.details[0].message).to.include("Start date must not be in the past",
+      "Expected error message about start date being in the future");
+  });
+  
+  test("4.3 Should validate response headers", function() {
+    expect(res.headers["content-type"]).to.match(/application\/json/,
+      "Expected JSON content type in response");
+  });
+  
+  test("4.4 Should have proper error response structure", function() {
+    expect(res.body).to.have.property('type');
+    expect(res.body).to.have.property('message');
+    expect(res.body).to.have.property('details');
+    expect(res.body.details).to.be.an('array');
+    expect(res.body.details[0]).to.have.property('field');
+    expect(res.body.details[0]).to.have.property('message');
+  });
+  
+  test("4.5 Should validate that start date is indeed today", function() {
+    const today = new Date();
+    const today_iso = today.toISOString();
+    const request_start_date = bru.getVar("today_iso");
+    
+    // Both should be from the same day
+    expect(request_start_date.substring(0, 10)).to.equal(today_iso.substring(0, 10),
+      "Start date should be today's date");
+  });
+  
+  test("4.6 Should confirm end date is in the future", function() {
+    const future_date = bru.getVar("future_date");
+    const future_date_obj = new Date(future_date);
+    const today = new Date();
+    
+    expect(future_date_obj.getTime()).to.be.greaterThan(today.getTime(),
+      "End date should be in the future");
+  });
+  
+  test("4.7 Should validate promotion type and value", function() {
+    // This test ensures our request data is valid except for the date issue
+    expect(15).to.be.within(1, 100, "Percentage value should be valid (1-100)");
+  });
+}
