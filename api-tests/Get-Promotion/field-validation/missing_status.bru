@@ -1,0 +1,53 @@
+meta {
+  name: missing_status_validation
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8080/admin/promotions/searchById?product-id=SKU-PRO-001
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("5.1 Should reject promotion without status", function() {
+    expect(res.status).to.equal(400,
+      "Expected 400 Bad Request status for missing status");
+  });
+
+  test("5.2 Should return appropriate error message and field", function() {
+    expect(res.body.type).to.equal("validation_error",
+      "Expected validation_error type");
+    
+    // Check for error details with correct field name
+    expect(res.body.details).to.be.an('array');
+    expect(res.body.details.length).to.be.at.least(1);
+    
+    // Find the error for status
+    const statusError = res.body.details.find(detail => detail.field === "status");
+    expect(statusError).to.exist;
+    expect(statusError.message).to.include("required",
+      "Expected error message about status being required");
+  });
+
+  test("5.3 Should validate response headers", function() {
+    expect(res.headers["content-type"]).to.match(/application\/json/,
+      "Expected JSON content type in response");
+  });
+
+  test("5.4 Should have proper error response structure", function() {
+    expect(res.body).to.have.property('type');
+    expect(res.body).to.have.property('message');
+    expect(res.body).to.have.property('details');
+    expect(res.body.details).to.be.an('array');
+  });
+} 

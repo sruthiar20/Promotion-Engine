@@ -1,0 +1,53 @@
+meta {
+  name: mutually_exclusive_fields_validation
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/admin/promotions/searchById?status=active&product-id=SKU-PRO-001&category-id=SKU-CAT-001
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("1.1 Should reject promotion with both product-id and category-id", function() {
+    expect(res.status).to.equal(400,
+      "Expected 400 Bad Request status when both product-id and category-id are provided");
+  });
+
+  test("1.2 Should return appropriate error message and field", function() {
+    expect(res.body.type).to.equal("validation_error",
+      "Expected validation_error type");
+    
+    // Check for single error detail with correct field name
+    expect(res.body.details).to.be.an('array');
+    expect(res.body.details).to.have.length(1);
+    expect(res.body.details[0].field).to.equal("product_id, category_id",
+      "Expected field name to include both product_id and category_id");
+    expect(res.body.details[0].message).to.equal("Fields product_id and category_id are mutually_exclusive_fields — only one must be provided",
+      "Expected error message about mutually exclusive fields");
+  });
+
+  test("1.3 Should validate response headers", function() {
+    expect(res.headers["content-type"]).to.match(/application\/json/,
+      "Expected JSON content type in response");
+  });
+
+  test("1.4 Should have proper error response structure", function() {
+    expect(res.body).to.have.property('type');
+    expect(res.body).to.have.property('message');
+    expect(res.body).to.have.property('details');
+    expect(res.body.details).to.be.an('array');
+    expect(res.body.details[0]).to.have.property('field');
+    expect(res.body.details[0]).to.have.property('message');
+  });
+} 

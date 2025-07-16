@@ -1,0 +1,59 @@
+meta {
+  name: invalid_date_format_validation
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/admin/promotions/searchById?status=active&product-id=SKU-PRO-001&starts_at=2026-07-01&ends_at=2026-08-31
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+assert {
+  res.status: eq 400
+}
+
+tests {
+  test("1.1 Should reject promotion with invalid date format", function() {
+    expect(res.status).to.equal(400,
+      "Expected 400 Bad Request status for invalid date format");
+  });
+
+  test("1.2 Should return appropriate error message and field", function() {
+    expect(res.body.type).to.equal("validation_error",
+      "Expected validation_error type");
+    
+    // Check for error details with correct field names
+    expect(res.body.details).to.be.an('array');
+    expect(res.body.details.length).to.be.at.least(1);
+    
+    // Find the error for starts_at
+    const startsAtError = res.body.details.find(detail => detail.field === "starts_at");
+    expect(startsAtError).to.exist;
+    expect(startsAtError.message).to.equal("Invalid date format",
+      "Expected error message about invalid date format for starts_at");
+      
+    // Find the error for ends_at
+    const endsAtError = res.body.details.find(detail => detail.field === "ends_at");
+    expect(endsAtError).to.exist;
+    expect(endsAtError.message).to.equal("Invalid date format",
+      "Expected error message about invalid date format for ends_at");
+  });
+
+  test("1.3 Should validate response headers", function() {
+    expect(res.headers["content-type"]).to.match(/application\/json/,
+      "Expected JSON content type in response");
+  });
+
+  test("1.4 Should have proper error response structure", function() {
+    expect(res.body).to.have.property('type');
+    expect(res.body).to.have.property('message');
+    expect(res.body).to.have.property('details');
+    expect(res.body.details).to.be.an('array');
+  });
+} 
