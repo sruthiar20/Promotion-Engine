@@ -4,9 +4,8 @@ meta {
   seq: 2
 }
 
-post {
-  url: http://localhost:8080/admin/promotions
-  body: json
+get {
+  url: http://localhost:8080/admin/promotions/searchById?status=active&product-id=SKU-PRO-001&starts_at={{start_date}}&ends_at={{end_date}}
   auth: none
 }
 
@@ -14,20 +13,6 @@ headers {
   Content-Type: application/json
   Accept: application/json
 }
-
-body:json {
-  {
-    "code": "past_date_001",
-    "type": "percentage",
-    "value": 10,
-    "value_type": "percentage",
-    "starts_at": "{{past_date}}",
-    "ends_at": "{{future_date}}",
-    "is_automatic": false,
-    "usage_limit": 100
-  }
-}
-
 
 script:pre-request {
   // Set start date to 7 days ago (past date)
@@ -71,8 +56,5 @@ tests {
       "End date should be in the future");
   });
   
-  test("2.6 Should validate promotion type and value", function() {
-    // This test ensures our request data is valid except for the date issue
-    expect(10).to.be.within(1, 100, "Percentage value should be valid (1-100)");
-  });
+
 }
