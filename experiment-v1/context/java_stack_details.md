@@ -8,7 +8,7 @@ Utilities - Mockito
 Testing dependencies: JUnit 5, Mockito, Reactor Test
 No Lombok — explicitly generate all boilerplate code
 
-Postgres database access - user : postgres, password : postgres, database name : promotion_service_v13
+Postgres database access - user : postgres, password : postgres, database name : promotion_engine_v1
 
 Code Quality - Sonar 
 

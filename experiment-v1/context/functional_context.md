@@ -22,8 +22,11 @@ Promotion engine is responsible for fetching various types of promotions with pr
 
 * **Condition Matching**:
 filter documents based on whether `product_id` or `category_id` is provided in the request.
-
-* **Query Rules**:
+* **Primary Lookup:**
+  * First, check if the given product_id or category_id exists in the promotion_engine_v1 database.
+* **Fallback Lookup:**
+  * If not found, search in the existing promotiondb database.  
+* **Promotion Retrieval Logic:**:
   * If `product_id` is provided:
     * Search for documents where the `conditions` array contains an object with:
       * `"type": "product"`
@@ -32,6 +35,14 @@ filter documents based on whether `product_id` or `category_id` is provided in t
     * Search for documents where the `conditions` array contains an object with:
       * `"type": "category"`
       * `"value"` array includes the specified `category_id`
+
+---
+
+### **Database Handling**
+
+* Existing Source: promotiondb (used to fetch data if not found in new DB)
+
+* New Target DB: Create a new database named promotion_engine_v1 inside the experiment-v1 service. Use it to store retrieved results from promotiondb for future direct access
 
 ---
 
@@ -45,9 +56,6 @@ filter documents based on whether `product_id` or `category_id` is provided in t
 
 - **Validation**: Start date and End date fields must be in ISO 8601 (YYYY-MM-DDTHH:mm:ss.sssZ)
   **Error Message**: Invalid date format
-
-- **Validation**: Start time and End time fields must be in 24-hour notation (HH:mm:ss)
-  **Error Message**: Invalid time format  
 
 **Status Validation**:
 
@@ -67,6 +75,8 @@ filter documents based on whether `product_id` or `category_id` is provided in t
 **product_id and category_id Validation**:
 - **Validation**: request cannot have both product_id and category_id
 - **Error Message**: Fields product_id and category_id are mutually_exclusive_fields — only one must be provided
+
+---
 
 ### Sample Error Response Format
 ```json

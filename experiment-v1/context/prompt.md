@@ -6,7 +6,7 @@ Step 2 : Process Bruno API Test files in /api-tests/Create-Promotion identify te
 
 Step 3 : all the pre-conditions defined in pre-conditions.md should be successful before proceeding
 
-Step 4: Use experiment-v1/generated_code as project base folder for code generation. Create promotion engine based on given api-contract. Implement relevant core business logic for handling these business requirements and including validation.
+Step 4: Use experiment-v1/generated_code as project base folder for code generation.Generate backend code that enforces each constraint. Implement validation logic with consistent error handling matching the defined functional_context and api_contract. Ensure each failed validation returns a 400 Bad Request with type, message, and details as specified
 
 Step 5: Build and validate the service using:
 Use Bruno CLI to run tests under the folder: 
