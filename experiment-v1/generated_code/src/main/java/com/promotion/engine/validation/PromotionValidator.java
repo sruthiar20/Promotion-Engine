@@ -6,8 +6,6 @@ import com.promotion.engine.exception.ValidationError;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,18 +92,8 @@ public class PromotionValidator implements ConstraintValidator<ValidPromotion, P
         Instant startsAt = request.getStartsAt();
         Instant endsAt = request.getEndsAt();
         
-        // Validate start date is not in the past or today
-        if (startsAt != null) {
-            // Check if start date is in the past or today (must be in the future)
-            LocalDate startDate = startsAt.atZone(ZoneOffset.UTC).toLocalDate();
-            LocalDate today = LocalDate.now(ZoneOffset.UTC);
-            
-            if (startDate.isBefore(today) || startDate.isEqual(today)) {
-                errors.add(new ValidationError("starts_at", "Start date must not be in the past"));
-            }
-        }
-        
-        // Validate end date is after start date
+        // For search API, past dates are allowed - we're searching for promotions that may have been active in the past
+        // Only validate that end date is after start date if both are provided
         if (startsAt != null && endsAt != null) {
             if (endsAt.isBefore(startsAt)) {
                 errors.add(new ValidationError("ends_at", "End date must be after start date"));

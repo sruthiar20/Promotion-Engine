@@ -83,7 +83,7 @@ sonarqube {
         property "sonar.projectName", "Promotion Engine"
         property "sonar.host.url", "http://localhost:9000"
         property "sonar.token", "sqp_b5f8c6c93e3e002ee36ae4e7436de875b66671df"
-        property "sonar.exclusions", "**/domain/**,**/dto/**,**/config/**,**/exceptions/**"
+        property "sonar.exclusions", "**/domain/**,**/dto/**,**/config/**,**/exception/**"
     }
 }
 

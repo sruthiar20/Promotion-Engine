@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.promotion.engine.validation.PromotionValidatorTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2025-07-17T07:35:27.614Z" hostname="Sruthis-MacBook-Pro.local" time="0.089">
+<testsuite name="com.promotion.engine.validation.PromotionValidatorTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2025-07-17T12:09:40.444Z" hostname="Sruthis-MacBook-Pro.local" time="0.104">
   <properties/>
-  <testcase name="testIsValid_MutuallyExclusiveFields()" classname="com.promotion.engine.validation.PromotionValidatorTest" time="0.068"/>
+  <testcase name="testIsValid_MutuallyExclusiveFields()" classname="com.promotion.engine.validation.PromotionValidatorTest" time="0.082"/>
   <testcase name="testIsValid_MissingProductAndCategoryId()" classname="com.promotion.engine.validation.PromotionValidatorTest" time="0.002"/>
   <testcase name="testIsValid_EmptyCategoryId()" classname="com.promotion.engine.validation.PromotionValidatorTest" time="0.002"/>
   <testcase name="testIsValid_ValidRequestWithPastDate()" classname="com.promotion.engine.validation.PromotionValidatorTest" time="0.003"/>
   <testcase name="testIsValid_EmptyProductId()" classname="com.promotion.engine.validation.PromotionValidatorTest" time="0.002"/>
   <testcase name="testIsValid_ValidRequestWithCategoryId()" classname="com.promotion.engine.validation.PromotionValidatorTest" time="0.001"/>
-  <testcase name="testIsValid_MissingStatus()" classname="com.promotion.engine.validation.PromotionValidatorTest" time="0.001"/>
+  <testcase name="testIsValid_MissingStatus()" classname="com.promotion.engine.validation.PromotionValidatorTest" time="0.002"/>
   <testcase name="testIsValid_InvalidStatus()" classname="com.promotion.engine.validation.PromotionValidatorTest" time="0.002"/>
   <testcase name="testIsValid_ValidRequestWithProductId()" classname="com.promotion.engine.validation.PromotionValidatorTest" time="0.002"/>
   <testcase name="testIsValid_EndDateBeforeStartDate()" classname="com.promotion.engine.validation.PromotionValidatorTest" time="0.002"/>

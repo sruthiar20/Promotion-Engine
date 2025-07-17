@@ -1,0 +1,6 @@
+projectKey=Promotion-Engine
+serverUrl=http://localhost:9000
+serverVersion=25.6.0.109173
+dashboardUrl=http://localhost:9000/dashboard?id=Promotion-Engine
+ceTaskId=246588c2-ca06-4145-bc72-d8b3b7bc1599
+ceTaskUrl=http://localhost:9000/api/ce/task?id=246588c2-ca06-4145-bc72-d8b3b7bc1599

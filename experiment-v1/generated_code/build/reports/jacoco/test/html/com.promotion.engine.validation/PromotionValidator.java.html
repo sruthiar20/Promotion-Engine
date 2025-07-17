@@ -62,42 +62,43 @@ import java.util.List;
 <span class="fc" id="L62">        String productId = request.getProductId();</span>
 <span class="fc" id="L63">        String categoryId = request.getCategoryId();</span>
         
-<span class="fc bfc" id="L65" title="All 6 branches covered.">        if (productId != null &amp;&amp; !productId.trim().isEmpty() &amp;&amp; </span>
-<span class="pc bpc" id="L66" title="1 of 2 branches missed.">            categoryId != null &amp;&amp; !categoryId.trim().isEmpty()) {</span>
-            // Both product-id and category-id provided (mutually exclusive)
-<span class="fc" id="L68">            errors.add(new ValidationError(&quot;product_id, category_id&quot;, </span>
-                &quot;Fields product_id and category_id are mutually_exclusive_fields — only one must be provided&quot;));
-<span class="fc bfc" id="L70" title="All 6 branches covered.">        } else if ((productId == null || productId.trim().isEmpty()) &amp;&amp; </span>
-<span class="fc bfc" id="L71" title="All 2 branches covered.">                  (categoryId == null || categoryId.trim().isEmpty())) {</span>
-            // Neither product-id nor category-id provided
-<span class="fc" id="L73">            errors.add(new ValidationError(&quot;product_id, category_id&quot;, </span>
-                &quot;Either product_id or category_id must be provided&quot;));
-        } else {
-            // One of them is provided, validate it's not empty
-<span class="pc bpc" id="L77" title="1 of 4 branches missed.">            if (productId != null &amp;&amp; productId.trim().isEmpty()) {</span>
-<span class="nc" id="L78">                errors.add(new ValidationError(&quot;product_id&quot;, &quot;product_id must be a valid string&quot;));</span>
-            }
-            
-<span class="pc bpc" id="L81" title="1 of 4 branches missed.">            if (categoryId != null &amp;&amp; categoryId.trim().isEmpty()) {</span>
-<span class="nc" id="L82">                errors.add(new ValidationError(&quot;category_id&quot;, &quot;category_id must be a valid string&quot;));</span>
-            }
+        // Check for empty strings first (provided but invalid)
+<span class="fc bfc" id="L66" title="All 4 branches covered.">        if (productId != null &amp;&amp; productId.trim().isEmpty()) {</span>
+<span class="fc" id="L67">            errors.add(new ValidationError(&quot;product_id&quot;, &quot;product_id must be a valid string&quot;));</span>
+<span class="fc" id="L68">            return; // Exit early to avoid other validations</span>
         }
-<span class="fc" id="L85">    }</span>
+        
+<span class="fc bfc" id="L71" title="All 4 branches covered.">        if (categoryId != null &amp;&amp; categoryId.trim().isEmpty()) {</span>
+<span class="fc" id="L72">            errors.add(new ValidationError(&quot;category_id&quot;, &quot;category_id must be a valid string&quot;));</span>
+<span class="fc" id="L73">            return; // Exit early to avoid other validations</span>
+        }
+        
+        // Check if both are provided (mutually exclusive)
+<span class="pc bpc" id="L77" title="1 of 4 branches missed.">        boolean hasProductId = productId != null &amp;&amp; !productId.trim().isEmpty();</span>
+<span class="pc bpc" id="L78" title="1 of 4 branches missed.">        boolean hasCategoryId = categoryId != null &amp;&amp; !categoryId.trim().isEmpty();</span>
+        
+<span class="fc bfc" id="L80" title="All 4 branches covered.">        if (hasProductId &amp;&amp; hasCategoryId) {</span>
+            // Both product-id and category-id provided (mutually exclusive)
+<span class="fc" id="L82">            errors.add(new ValidationError(&quot;product_id, category_id&quot;, </span>
+                &quot;Fields product_id and category_id are mutually_exclusive_fields — only one must be provided&quot;));
+<span class="fc bfc" id="L84" title="All 4 branches covered.">        } else if (!hasProductId &amp;&amp; !hasCategoryId) {</span>
+            // Neither product-id nor category-id provided
+<span class="fc" id="L86">            errors.add(new ValidationError(&quot;product_id, category_id&quot;, </span>
+                &quot;Either product_id or category_id must be provided&quot;));
+        }
+<span class="fc" id="L89">    }</span>
     
     private void validateDates(PromotionSearchRequest request, List&lt;ValidationError&gt; errors) {
-<span class="fc" id="L88">        Instant startsAt = request.getStartsAt();</span>
-<span class="fc" id="L89">        Instant endsAt = request.getEndsAt();</span>
+<span class="fc" id="L92">        Instant startsAt = request.getStartsAt();</span>
+<span class="fc" id="L93">        Instant endsAt = request.getEndsAt();</span>
         
-        // Both dates are optional, but if provided they must be valid
-<span class="pc bpc" id="L92" title="2 of 4 branches missed.">        if (startsAt != null &amp;&amp; endsAt != null) {</span>
-            // Validate that end date is after start date
-<span class="fc bfc" id="L94" title="All 2 branches covered.">            if (endsAt.isBefore(startsAt)) {</span>
-<span class="fc" id="L95">                errors.add(new ValidationError(&quot;ends_at&quot;, &quot;End date must be after start date&quot;));</span>
+        // For search API, past dates are allowed - we're searching for promotions that may have been active in the past
+        // Only validate that end date is after start date if both are provided
+<span class="pc bpc" id="L97" title="2 of 4 branches missed.">        if (startsAt != null &amp;&amp; endsAt != null) {</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">            if (endsAt.isBefore(startsAt)) {</span>
+<span class="fc" id="L99">                errors.add(new ValidationError(&quot;ends_at&quot;, &quot;End date must be after start date&quot;));</span>
             }
         }
-        
-        // Note: &quot;Start date not in the past&quot; validation is for creation, not search
-        // This is a search API, so we allow searching for past promotions
-<span class="fc" id="L101">    }</span>
+<span class="fc" id="L102">    }</span>
 } 
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

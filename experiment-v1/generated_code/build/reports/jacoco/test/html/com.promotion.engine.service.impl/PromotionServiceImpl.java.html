@@ -28,7 +28,7 @@ import java.time.format.DateTimeParseException;
 @Service
 public class PromotionServiceImpl implements PromotionService {
 
-<span class="nc" id="L31">    private static final Logger logger = LoggerFactory.getLogger(PromotionServiceImpl.class);</span>
+<span class="fc" id="L31">    private static final Logger logger = LoggerFactory.getLogger(PromotionServiceImpl.class);</span>
     
     private final PromotionRepository promotionRepository;
     private final R2dbcEntityTemplate fallbackR2dbcTemplate;
@@ -44,29 +44,29 @@ public class PromotionServiceImpl implements PromotionService {
     @Autowired
     public PromotionServiceImpl(PromotionRepository promotionRepository, 
                                @Qualifier(&quot;fallbackR2dbcTemplate&quot;) R2dbcEntityTemplate fallbackR2dbcTemplate,
-<span class="nc" id="L47">                               JsonNodeConverter jsonNodeConverter) {</span>
-<span class="nc" id="L48">        this.promotionRepository = promotionRepository;</span>
-<span class="nc" id="L49">        this.fallbackR2dbcTemplate = fallbackR2dbcTemplate;</span>
-<span class="nc" id="L50">        this.jsonNodeConverter = jsonNodeConverter;</span>
-<span class="nc" id="L51">    }</span>
+<span class="fc" id="L47">                               JsonNodeConverter jsonNodeConverter) {</span>
+<span class="fc" id="L48">        this.promotionRepository = promotionRepository;</span>
+<span class="fc" id="L49">        this.fallbackR2dbcTemplate = fallbackR2dbcTemplate;</span>
+<span class="fc" id="L50">        this.jsonNodeConverter = jsonNodeConverter;</span>
+<span class="fc" id="L51">    }</span>
 
     /**
      * {@inheritDoc}
      */
     @Override
     public Mono&lt;PromotionResponse&gt; searchPromotion(PromotionSearchRequest request) {
-<span class="nc" id="L58">        logger.debug(&quot;Searching for promotion with request: {}&quot;, request);</span>
+<span class="fc" id="L58">        logger.debug(&quot;Searching for promotion with request: {}&quot;, request);</span>
         
         try {
-<span class="nc bnc" id="L61" title="All 4 branches missed.">            if (request.getProductId() != null &amp;&amp; !request.getProductId().isEmpty()) {</span>
+<span class="pc bpc" id="L61" title="1 of 4 branches missed.">            if (request.getProductId() != null &amp;&amp; !request.getProductId().isEmpty()) {</span>
 <span class="nc" id="L62">                logger.debug(&quot;Searching by product ID: {}&quot;, request.getProductId());</span>
 <span class="nc" id="L63">                return searchByProductId(request);</span>
-<span class="nc bnc" id="L64" title="All 4 branches missed.">            } else if (request.getCategoryId() != null &amp;&amp; !request.getCategoryId().isEmpty()) {</span>
+<span class="pc bpc" id="L64" title="1 of 4 branches missed.">            } else if (request.getCategoryId() != null &amp;&amp; !request.getCategoryId().isEmpty()) {</span>
 <span class="nc" id="L65">                logger.debug(&quot;Searching by category ID: {}&quot;, request.getCategoryId());</span>
 <span class="nc" id="L66">                return searchByCategoryId(request);</span>
             } else {
-<span class="nc" id="L68">                logger.error(&quot;Invalid request: neither product ID nor category ID provided&quot;);</span>
-<span class="nc" id="L69">                return Mono.empty();</span>
+<span class="fc" id="L68">                logger.error(&quot;Invalid request: neither product ID nor category ID provided&quot;);</span>
+<span class="fc" id="L69">                return Mono.empty();</span>
             }
 <span class="nc" id="L71">        } catch (DateTimeParseException e) {</span>
 <span class="nc" id="L72">            logger.error(&quot;Error parsing date: {}&quot;, e.getMessage());</span>
@@ -147,11 +147,11 @@ public class PromotionServiceImpl implements PromotionService {
 <span class="nc" id="L147">            .and(Criteria.where(&quot;conditions_json&quot;).like(&quot;%\&quot;&quot; + request.getProductId() + &quot;\&quot;%&quot;));</span>
             
 <span class="nc bnc" id="L149" title="All 2 branches missed.">        if (request.getStartsAt() != null) {</span>
-<span class="nc" id="L150">            criteria = criteria.and(Criteria.where(&quot;starts_at&quot;).greaterThanOrEquals(request.getStartsAt()));</span>
+<span class="nc" id="L150">            criteria = criteria.and(Criteria.where(&quot;ends_at&quot;).greaterThanOrEquals(request.getStartsAt()));</span>
         }
         
 <span class="nc bnc" id="L153" title="All 2 branches missed.">        if (request.getEndsAt() != null) {</span>
-<span class="nc" id="L154">            criteria = criteria.and(Criteria.where(&quot;ends_at&quot;).lessThanOrEquals(request.getEndsAt()));</span>
+<span class="nc" id="L154">            criteria = criteria.and(Criteria.where(&quot;starts_at&quot;).lessThanOrEquals(request.getEndsAt()));</span>
         }
         
 <span class="nc" id="L157">        return fallbackR2dbcTemplate.select(Promotion.class)</span>
@@ -174,11 +174,11 @@ public class PromotionServiceImpl implements PromotionService {
 <span class="nc" id="L174">            .and(Criteria.where(&quot;conditions_json&quot;).like(&quot;%\&quot;&quot; + request.getCategoryId() + &quot;\&quot;%&quot;));</span>
             
 <span class="nc bnc" id="L176" title="All 2 branches missed.">        if (request.getStartsAt() != null) {</span>
-<span class="nc" id="L177">            criteria = criteria.and(Criteria.where(&quot;starts_at&quot;).greaterThanOrEquals(request.getStartsAt()));</span>
+<span class="nc" id="L177">            criteria = criteria.and(Criteria.where(&quot;ends_at&quot;).greaterThanOrEquals(request.getStartsAt()));</span>
         }
         
 <span class="nc bnc" id="L180" title="All 2 branches missed.">        if (request.getEndsAt() != null) {</span>
-<span class="nc" id="L181">            criteria = criteria.and(Criteria.where(&quot;ends_at&quot;).lessThanOrEquals(request.getEndsAt()));</span>
+<span class="nc" id="L181">            criteria = criteria.and(Criteria.where(&quot;starts_at&quot;).lessThanOrEquals(request.getEndsAt()));</span>
         }
         
 <span class="nc" id="L184">        return fallbackR2dbcTemplate.select(Promotion.class)</span>

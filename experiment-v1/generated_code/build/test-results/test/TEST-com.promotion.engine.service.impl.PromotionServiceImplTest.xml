@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.promotion.engine.service.impl.PromotionServiceImplTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2025-07-17T12:09:40.155Z" hostname="Sruthis-MacBook-Pro.local" time="0.282">
+  <properties/>
+  <testcase name="testSearchPromotion_EmptyCategoryId()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.239"/>
+  <testcase name="testSearchRequestMethods()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.008"/>
+  <testcase name="testPromotionMappingSetup()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.003"/>
+  <testcase name="testSearchPromotion_EmptyProductId()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.003"/>
+  <testcase name="testSearchPromotion_NullProductAndCategoryId()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.003"/>
+  <testcase name="testSearchPromotion_NullStatus()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.002"/>
+  <testcase name="testSearchPromotion_NullDatesWithEmptyProduct()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.002"/>
+  <testcase name="testSearchRequestValidation()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.003"/>
+  <testcase name="testSearchPromotion_DifferentStatus()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.002"/>
+  <testcase name="testPromotionProcessing()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.002"/>
+  <testcase name="testPromotionModelMethods()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.002"/>
+  <testcase name="testServiceInitialization()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.002"/>
+  <testcase name="testServiceInstantiation()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.002"/>
+  <testcase name="testSearchPromotion_BothEmpty()" classname="com.promotion.engine.service.impl.PromotionServiceImplTest" time="0.003"/>
+  <system-out><![CDATA[2025-07-17T17:39:40.383+05:30 DEBUG 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Searching for promotion with request: com.promotion.engine.dto.request.PromotionSearchRequest@421581cd
+2025-07-17T17:39:40.384+05:30 ERROR 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Invalid request: neither product ID nor category ID provided
+2025-07-17T17:39:40.409+05:30 DEBUG 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Searching for promotion with request: com.promotion.engine.dto.request.PromotionSearchRequest@6dd6a2f9
+2025-07-17T17:39:40.410+05:30 ERROR 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Invalid request: neither product ID nor category ID provided
+2025-07-17T17:39:40.414+05:30 DEBUG 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Searching for promotion with request: com.promotion.engine.dto.request.PromotionSearchRequest@4f0ee1eb
+2025-07-17T17:39:40.414+05:30 ERROR 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Invalid request: neither product ID nor category ID provided
+2025-07-17T17:39:40.416+05:30 DEBUG 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Searching for promotion with request: com.promotion.engine.dto.request.PromotionSearchRequest@500bde5b
+2025-07-17T17:39:40.417+05:30 ERROR 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Invalid request: neither product ID nor category ID provided
+2025-07-17T17:39:40.419+05:30 DEBUG 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Searching for promotion with request: com.promotion.engine.dto.request.PromotionSearchRequest@1da074ef
+2025-07-17T17:39:40.419+05:30 ERROR 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Invalid request: neither product ID nor category ID provided
+2025-07-17T17:39:40.424+05:30 DEBUG 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Searching for promotion with request: com.promotion.engine.dto.request.PromotionSearchRequest@29f4d42
+2025-07-17T17:39:40.424+05:30 ERROR 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Invalid request: neither product ID nor category ID provided
+2025-07-17T17:39:40.437+05:30 DEBUG 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Searching for promotion with request: com.promotion.engine.dto.request.PromotionSearchRequest@249676e4
+2025-07-17T17:39:40.437+05:30 ERROR 51454 --- [    Test worker] c.p.e.service.impl.PromotionServiceImpl  : Invalid request: neither product ID nor category ID provided
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
