@@ -13,7 +13,6 @@
 ## Single Responsibility
 - Each function should do exactly one thing
 - Functions should be small and focused
-- If a function needs a comment to explain what it does, it should be split
 
 ## DRY (Don't Repeat Yourself)
 - Extract repeated code into reusable functions
@@ -24,6 +23,7 @@
 - Keep related code together
 - Organize code in a logical hierarchy
 - Use consistent file and folder naming conventions
+- Dont use comments
 
 ## Encapsulation
 - Hide implementation details

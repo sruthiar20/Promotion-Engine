@@ -1,0 +1,94 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.4'
+    id 'io.spring.dependency-management' version '1.1.6'
+    id 'org.flywaydb.flyway' version '10.20.1'
+    id 'jacoco'
+    id 'org.sonarqube' version '6.2.0.5505'
+}
+
+group = 'com.promotion'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '17'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    
+    // Database
+    implementation 'org.postgresql:postgresql'
+    implementation 'org.postgresql:r2dbc-postgresql'
+    implementation 'org.flywaydb:flyway-core:10.20.1'
+    implementation 'org.flywaydb:flyway-database-postgresql:10.20.1'
+    
+    // JSON processing
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    
+    // Logging
+    implementation 'org.slf4j:slf4j-api'
+    implementation 'ch.qos.logback:logback-classic'
+    
+    // Test dependencies
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation 'org.mockito:mockito-core:5.14.2'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.14.2'
+    
+    // R2DBC for testing
+    testImplementation 'io.r2dbc:r2dbc-h2'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = "0.8.13"
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                "**/model/**",
+                "**/dto/**",
+                "**/config/**",
+                "**/exception/**"
+            ])
+        }))
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "Promotion-Engine"
+        property "sonar.projectName", "Promotion Engine"
+        property "sonar.host.url", "http://localhost:9000"
+        property "sonar.token", "sqp_b5f8c6c93e3e002ee36ae4e7436de875b66671df"
+        property "sonar.exclusions", "**/domain/**,**/dto/**,**/config/**,**/exceptions/**"
+    }
+}
+
+flyway {
+    url = 'jdbc:postgresql://localhost:5432/promotion_engine_v1'
+    user = 'postgres'
+    password = 'postgres'
+} 

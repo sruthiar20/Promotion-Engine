@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PromotionServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">promotion-engine</a> &gt; <a href="index.source.html" class="el_package">com.promotion.engine.service.impl</a> &gt; <span class="el_source">PromotionServiceImpl.java</span></div><h1>PromotionServiceImpl.java</h1><pre class="source lang-java linenums">package com.promotion.engine.service.impl;
+
+import com.promotion.engine.config.JsonNodeConverter;
+import com.promotion.engine.dto.request.PromotionSearchRequest;
+import com.promotion.engine.dto.response.PromotionResponse;
+import com.promotion.engine.exception.DateFormatException;
+import com.promotion.engine.exception.PromotionNotFoundException;
+import com.promotion.engine.model.Promotion;
+import com.promotion.engine.repository.PromotionRepository;
+import com.promotion.engine.service.PromotionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.data.relational.core.query.Criteria;
+import org.springframework.data.relational.core.query.Query;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
+
+import java.time.format.DateTimeParseException;
+
+/**
+ * Implementation of the promotion service with fallback lookup functionality.
+ * Primary lookup: promotion_engine_v1 database
+ * Fallback lookup: promotiondb database
+ */
+@Service
+public class PromotionServiceImpl implements PromotionService {
+
+<span class="nc" id="L31">    private static final Logger logger = LoggerFactory.getLogger(PromotionServiceImpl.class);</span>
+    
+    private final PromotionRepository promotionRepository;
+    private final R2dbcEntityTemplate fallbackR2dbcTemplate;
+    private final JsonNodeConverter jsonNodeConverter;
+
+    /**
+     * Creates a new promotion service.
+     *
+     * @param promotionRepository The primary promotion repository
+     * @param fallbackR2dbcTemplate The fallback database template
+     * @param jsonNodeConverter The JSON converter
+     */
+    @Autowired
+    public PromotionServiceImpl(PromotionRepository promotionRepository, 
+                               @Qualifier(&quot;fallbackR2dbcTemplate&quot;) R2dbcEntityTemplate fallbackR2dbcTemplate,
+<span class="nc" id="L47">                               JsonNodeConverter jsonNodeConverter) {</span>
+<span class="nc" id="L48">        this.promotionRepository = promotionRepository;</span>
+<span class="nc" id="L49">        this.fallbackR2dbcTemplate = fallbackR2dbcTemplate;</span>
+<span class="nc" id="L50">        this.jsonNodeConverter = jsonNodeConverter;</span>
+<span class="nc" id="L51">    }</span>
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Mono&lt;PromotionResponse&gt; searchPromotion(PromotionSearchRequest request) {
+<span class="nc" id="L58">        logger.debug(&quot;Searching for promotion with request: {}&quot;, request);</span>
+        
+        try {
+<span class="nc bnc" id="L61" title="All 4 branches missed.">            if (request.getProductId() != null &amp;&amp; !request.getProductId().isEmpty()) {</span>
+<span class="nc" id="L62">                logger.debug(&quot;Searching by product ID: {}&quot;, request.getProductId());</span>
+<span class="nc" id="L63">                return searchByProductId(request);</span>
+<span class="nc bnc" id="L64" title="All 4 branches missed.">            } else if (request.getCategoryId() != null &amp;&amp; !request.getCategoryId().isEmpty()) {</span>
+<span class="nc" id="L65">                logger.debug(&quot;Searching by category ID: {}&quot;, request.getCategoryId());</span>
+<span class="nc" id="L66">                return searchByCategoryId(request);</span>
+            } else {
+<span class="nc" id="L68">                logger.error(&quot;Invalid request: neither product ID nor category ID provided&quot;);</span>
+<span class="nc" id="L69">                return Mono.empty();</span>
+            }
+<span class="nc" id="L71">        } catch (DateTimeParseException e) {</span>
+<span class="nc" id="L72">            logger.error(&quot;Error parsing date: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L73">            throw new DateFormatException(</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">                e.getMessage().contains(&quot;starts_at&quot;) ? &quot;starts_at&quot; : &quot;ends_at&quot;,</span>
+                &quot;Invalid date format&quot;
+            );
+        }
+    }
+    
+    /**
+     * Searches for promotions by product ID with fallback logic.
+     *
+     * @param request The search request
+     * @return Mono of promotion response
+     */
+    private Mono&lt;PromotionResponse&gt; searchByProductId(PromotionSearchRequest request) {
+<span class="nc" id="L87">        return promotionRepository.findByStatusAndProductId(</span>
+<span class="nc" id="L88">                request.getStatus(),</span>
+<span class="nc" id="L89">                request.getProductId(),</span>
+<span class="nc" id="L90">                request.getStartsAt(),</span>
+<span class="nc" id="L91">                request.getEndsAt()</span>
+            )
+<span class="nc" id="L93">            .next() // Get first result from primary database</span>
+<span class="nc" id="L94">            .map(this::processPromotion)</span>
+<span class="nc" id="L95">            .map(this::mapToResponse)</span>
+<span class="nc" id="L96">            .doOnNext(result -&gt; logger.debug(&quot;Found promotion in primary database: {}&quot;, result.getId()))</span>
+<span class="nc" id="L97">            .switchIfEmpty(</span>
+                // Fallback to promotiondb if not found in primary
+<span class="nc" id="L99">                searchInFallbackByProductId(request)</span>
+<span class="nc" id="L100">                    .doOnNext(result -&gt; logger.debug(&quot;Found promotion in fallback database: {}&quot;, result.getId()))</span>
+<span class="nc" id="L101">                    .doOnSubscribe(s -&gt; logger.debug(&quot;Primary database search returned empty, searching fallback database&quot;))</span>
+            )
+<span class="nc" id="L103">            .switchIfEmpty(</span>
+                // If not found in either database, throw exception
+<span class="nc" id="L105">                Mono.error(new PromotionNotFoundException(&quot;product-id&quot;, request.getProductId()))</span>
+            );
+    }
+    
+    /**
+     * Searches for promotions by category ID with fallback logic.
+     *
+     * @param request The search request
+     * @return Mono of promotion response
+     */
+    private Mono&lt;PromotionResponse&gt; searchByCategoryId(PromotionSearchRequest request) {
+<span class="nc" id="L116">        return promotionRepository.findByStatusAndCategoryId(</span>
+<span class="nc" id="L117">                request.getStatus(),</span>
+<span class="nc" id="L118">                request.getCategoryId(),</span>
+<span class="nc" id="L119">                request.getStartsAt(),</span>
+<span class="nc" id="L120">                request.getEndsAt()</span>
+            )
+<span class="nc" id="L122">            .next() // Get first result from primary database</span>
+<span class="nc" id="L123">            .map(this::processPromotion)</span>
+<span class="nc" id="L124">            .map(this::mapToResponse)</span>
+<span class="nc" id="L125">            .doOnNext(result -&gt; logger.debug(&quot;Found promotion in primary database: {}&quot;, result.getId()))</span>
+<span class="nc" id="L126">            .switchIfEmpty(</span>
+                // Fallback to promotiondb if not found in primary
+<span class="nc" id="L128">                searchInFallbackByCategoryId(request)</span>
+<span class="nc" id="L129">                    .doOnNext(result -&gt; logger.debug(&quot;Found promotion in fallback database: {}&quot;, result.getId()))</span>
+<span class="nc" id="L130">                    .doOnSubscribe(s -&gt; logger.debug(&quot;Primary database search returned empty, searching fallback database&quot;))</span>
+            )
+<span class="nc" id="L132">            .switchIfEmpty(</span>
+                // If not found in either database, throw exception
+<span class="nc" id="L134">                Mono.error(new PromotionNotFoundException(&quot;category-id&quot;, request.getCategoryId()))</span>
+            );
+    }
+    
+    /**
+     * Searches in fallback database by product ID.
+     *
+     * @param request The search request
+     * @return Mono of promotion response
+     */
+    private Mono&lt;PromotionResponse&gt; searchInFallbackByProductId(PromotionSearchRequest request) {
+<span class="nc" id="L145">        Criteria criteria = Criteria.where(&quot;status&quot;).is(request.getStatus())</span>
+<span class="nc" id="L146">            .and(Criteria.where(&quot;conditions_json&quot;).like(&quot;%\&quot;type\&quot;:\&quot;product\&quot;%&quot;))</span>
+<span class="nc" id="L147">            .and(Criteria.where(&quot;conditions_json&quot;).like(&quot;%\&quot;&quot; + request.getProductId() + &quot;\&quot;%&quot;));</span>
+            
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        if (request.getStartsAt() != null) {</span>
+<span class="nc" id="L150">            criteria = criteria.and(Criteria.where(&quot;starts_at&quot;).greaterThanOrEquals(request.getStartsAt()));</span>
+        }
+        
+<span class="nc bnc" id="L153" title="All 2 branches missed.">        if (request.getEndsAt() != null) {</span>
+<span class="nc" id="L154">            criteria = criteria.and(Criteria.where(&quot;ends_at&quot;).lessThanOrEquals(request.getEndsAt()));</span>
+        }
+        
+<span class="nc" id="L157">        return fallbackR2dbcTemplate.select(Promotion.class)</span>
+<span class="nc" id="L158">            .from(&quot;promotion&quot;)</span>
+<span class="nc" id="L159">            .matching(Query.query(criteria))</span>
+<span class="nc" id="L160">            .first()</span>
+<span class="nc" id="L161">            .map(this::processPromotion)</span>
+<span class="nc" id="L162">            .map(this::mapToResponse);</span>
+    }
+    
+    /**
+     * Searches in fallback database by category ID.
+     *
+     * @param request The search request
+     * @return Mono of promotion response
+     */
+    private Mono&lt;PromotionResponse&gt; searchInFallbackByCategoryId(PromotionSearchRequest request) {
+<span class="nc" id="L172">        Criteria criteria = Criteria.where(&quot;status&quot;).is(request.getStatus())</span>
+<span class="nc" id="L173">            .and(Criteria.where(&quot;conditions_json&quot;).like(&quot;%\&quot;type\&quot;:\&quot;category\&quot;%&quot;))</span>
+<span class="nc" id="L174">            .and(Criteria.where(&quot;conditions_json&quot;).like(&quot;%\&quot;&quot; + request.getCategoryId() + &quot;\&quot;%&quot;));</span>
+            
+<span class="nc bnc" id="L176" title="All 2 branches missed.">        if (request.getStartsAt() != null) {</span>
+<span class="nc" id="L177">            criteria = criteria.and(Criteria.where(&quot;starts_at&quot;).greaterThanOrEquals(request.getStartsAt()));</span>
+        }
+        
+<span class="nc bnc" id="L180" title="All 2 branches missed.">        if (request.getEndsAt() != null) {</span>
+<span class="nc" id="L181">            criteria = criteria.and(Criteria.where(&quot;ends_at&quot;).lessThanOrEquals(request.getEndsAt()));</span>
+        }
+        
+<span class="nc" id="L184">        return fallbackR2dbcTemplate.select(Promotion.class)</span>
+<span class="nc" id="L185">            .from(&quot;promotion&quot;)</span>
+<span class="nc" id="L186">            .matching(Query.query(criteria))</span>
+<span class="nc" id="L187">            .first()</span>
+<span class="nc" id="L188">            .map(this::processPromotion)</span>
+<span class="nc" id="L189">            .map(this::mapToResponse);</span>
+    }
+    
+    /**
+     * Process a promotion by converting JSON strings to JsonNode objects.
+     *
+     * @param promotion The promotion to process
+     * @return The processed promotion
+     */
+    private Promotion processPromotion(Promotion promotion) {
+<span class="nc bnc" id="L199" title="All 2 branches missed.">        if (promotion.getConditionsJson() != null) {</span>
+<span class="nc" id="L200">            promotion.setConditions(jsonNodeConverter.convertToJsonNode(promotion.getConditionsJson()));</span>
+        }
+        
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        if (promotion.getRulesJson() != null) {</span>
+<span class="nc" id="L204">            promotion.setRules(jsonNodeConverter.convertToJsonNode(promotion.getRulesJson()));</span>
+        }
+        
+<span class="nc" id="L207">        return promotion;</span>
+    }
+    
+    /**
+     * Maps a promotion entity to a response DTO.
+     *
+     * @param promotion The promotion entity
+     * @return The response DTO
+     */
+    private PromotionResponse mapToResponse(Promotion promotion) {
+<span class="nc" id="L217">        PromotionResponse response = new PromotionResponse();</span>
+<span class="nc" id="L218">        response.setId(promotion.getId());</span>
+<span class="nc" id="L219">        response.setCode(promotion.getCode());</span>
+<span class="nc" id="L220">        response.setType(promotion.getType());</span>
+<span class="nc" id="L221">        response.setValue(promotion.getValue());</span>
+<span class="nc" id="L222">        response.setValueType(promotion.getValueType());</span>
+<span class="nc" id="L223">        response.setStartsAt(promotion.getStartsAt());</span>
+<span class="nc" id="L224">        response.setEndsAt(promotion.getEndsAt());</span>
+<span class="nc" id="L225">        response.setAutomatic(promotion.isAutomatic());</span>
+<span class="nc" id="L226">        response.setUsageLimit(promotion.getUsageLimit());</span>
+<span class="nc" id="L227">        response.setUsageCount(promotion.getUsageCount());</span>
+<span class="nc" id="L228">        response.setStatus(promotion.getStatus());</span>
+<span class="nc" id="L229">        response.setConditions(promotion.getConditions());</span>
+<span class="nc" id="L230">        response.setRules(promotion.getRules());</span>
+<span class="nc" id="L231">        response.setCreatedAt(promotion.getCreatedAt());</span>
+<span class="nc" id="L232">        response.setUpdatedAt(promotion.getUpdatedAt());</span>
+<span class="nc" id="L233">        return response;</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

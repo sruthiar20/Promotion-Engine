@@ -1,0 +1,82 @@
+meta {
+  name: valid_promotion_with_request_body
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/admin/promotions/searchById
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "status": "active",
+    "product-id": "SKU-PRO-001"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("3.1 Should successfully retrieve promotion with valid product-id", function() {
+    expect(res.status).to.equal(200,
+      "Expected 200 OK status for valid promotion");
+  });
+
+  test("3.2 Should validate response headers", function() {
+    expect(res.headers["content-type"]).to.match(/application\/json/,
+      "Expected JSON content type in response");
+  });
+
+  test("3.3 Should have proper response structure", function() {
+    expect(res.body).to.have.property('id');
+    expect(res.body).to.have.property('code');
+    expect(res.body).to.have.property('type');
+    expect(res.body).to.have.property('value');
+    expect(res.body).to.have.property('value_type');
+    expect(res.body).to.have.property('status');
+    expect(res.body).to.have.property('conditions').that.is.an('array');
+  });
+
+  test("3.4 Should have correct promotion status", function() {
+    expect(res.body.status).to.equal("active",
+      "Expected promotion status to be active");
+  });
+
+  test("3.5 Should validate product conditions", function() {
+    // Check that the conditions array contains a product condition
+    const productCondition = res.body.conditions.find(cond => cond.type === "product");
+    expect(productCondition).to.exist;
+    expect(productCondition.value).to.include("SKU-PRO-001",
+      "Expected product condition to include the requested product ID");
+  });
+
+  test("3.6 Should return single promotion object (not array)", function() {
+    expect(res.body).to.be.an('object',
+      "Expected response to be a single object, not an array");
+    expect(res.body).to.not.be.an('array',
+      "Expected response to not be an array");
+  });
+
+  test("3.7 Should validate fallback lookup functionality", function() {
+    // This test verifies that the promotion is found (either from primary or fallback DB)
+    expect(res.body.id).to.exist;
+    expect(res.body.code).to.exist;
+    console.log("Promotion found with ID:", res.body.id, "and code:", res.body.code);
+  });
+
+  test("3.8 Should have valid UUID format for ID", function() {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    expect(res.body.id).to.match(uuidRegex,
+      "Expected promotion ID to be a valid UUID");
+  });
+} 

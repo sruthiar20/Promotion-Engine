@@ -1,0 +1,102 @@
+[
+  {
+    "iterationIndex": 0,
+    "summary": {
+      "totalRequests": 1,
+      "passedRequests": 0,
+      "failedRequests": 1,
+      "skippedRequests": 0,
+      "errorRequests": 0,
+      "totalAssertions": 1,
+      "passedAssertions": 1,
+      "failedAssertions": 0,
+      "totalTests": 4,
+      "passedTests": 3,
+      "failedTests": 1,
+      "totalPreRequestTests": 0,
+      "passedPreRequestTests": 0,
+      "failedPreRequestTests": 0,
+      "totalPostResponseTests": 0,
+      "passedPostResponseTests": 0,
+      "failedPostResponseTests": 0
+    },
+    "results": [
+      {
+        "test": {
+          "filename": "Get-Promotion/field-validation/empty_category_id.bru"
+        },
+        "request": {
+          "method": "GET",
+          "url": "http://localhost:8080/admin/promotions/searchById",
+          "headers": {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          "data": "{\n  \"status\": \"active\",\n  \"category-id\": \"\"\n}"
+        },
+        "response": {
+          "status": 400,
+          "statusText": "Bad Request",
+          "headers": {
+            "content-type": "application/json",
+            "content-length": "191",
+            "connection": "close"
+          },
+          "data": {
+            "type": "validation_error",
+            "message": "Invalid field values in promotion request",
+            "details": [
+              {
+                "field": "product_id, category_id",
+                "message": "Either product_id or category_id must be provided"
+              }
+            ]
+          },
+          "responseTime": 13
+        },
+        "error": null,
+        "status": "pass",
+        "assertionResults": [
+          {
+            "uid": "w6zb8AJBdh9a6YqReotdq",
+            "lhsExpr": "res.status",
+            "rhsExpr": "eq 400",
+            "rhsOperand": "400",
+            "operator": "eq",
+            "status": "pass"
+          }
+        ],
+        "testResults": [
+          {
+            "description": "4.2 Should return appropriate error message and field",
+            "status": "fail",
+            "error": "expected undefined to exist",
+            "uid": "29wgh-61piYvQbOHfXLMf"
+          },
+          {
+            "description": "4.1 Should reject promotion with empty category-id",
+            "status": "pass",
+            "uid": "4pSNJUzeoPC-ltJKUNHJz"
+          },
+          {
+            "description": "4.3 Should validate response headers",
+            "status": "pass",
+            "uid": "F1vq44GBwxheqz2R1o50X"
+          },
+          {
+            "description": "4.4 Should have proper error response structure",
+            "status": "pass",
+            "uid": "qUivwAIcUWDFZ8P6jJ2b5"
+          }
+        ],
+        "preRequestTestResults": [],
+        "postResponseTestResults": [],
+        "shouldStopRunnerExecution": false,
+        "runDuration": 0.038633917,
+        "name": "empty_category_id_validation",
+        "path": "Get-Promotion/field-validation/empty_category_id",
+        "iterationIndex": 0
+      }
+    ]
+  }
+]

@@ -1,17 +1,26 @@
 meta {
   name: mutually_exclusive_fields_validation
   type: http
-  seq: 1
+  seq: 5
 }
 
 get {
-  url: http://localhost:8080/admin/promotions/searchById?status=active&product-id=SKU-PRO-001&category-id=SKU-CAT-001
+  url: http://localhost:8080/admin/promotions/searchById
+  body: json
   auth: none
 }
 
 headers {
   Content-Type: application/json
   Accept: application/json
+}
+
+body:json {
+  {
+    "status": "active",
+    "product-id": "SKU-PRO-001",
+    "category-id": "SKU-CAT-001"
+  }
 }
 
 assert {

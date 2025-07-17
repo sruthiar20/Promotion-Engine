@@ -5,7 +5,8 @@ meta {
 }
 
 get {
-  url: http://localhost:8080/admin/promotions/searchById?status=active&product-id=SKU-PRO-001&starts_at={{start_date}}&ends_at={{end_date}}
+  url: http://localhost:8080/admin/promotions/searchById
+  body: json
   auth: none
 }
 
@@ -14,14 +15,21 @@ headers {
   Accept: application/json
 }
 
+body:json {
+  {
+    "status": "active",
+    "product-id": "SKU-PRO-001",
+    "starts_at": "{{start_date}}",
+    "ends_at": "{{end_date}}"
+  }
+}
+
 script:pre-request {
-  // Set start date to tomorrow
-  const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  bru.setVar("start_date", tomorrow.toISOString());
+  // Set start date to match the promotion in database (2026-07-09)
+  bru.setVar("start_date", "2026-07-09T00:00:00Z");
   
-  // Set end date to 30 days from now
-  const end_date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-  bru.setVar("end_date", end_date.toISOString());
+  // Set end date to match the promotion in database (2026-08-31)
+  bru.setVar("end_date", "2026-08-31T23:59:59Z");
 }
 
 assert {

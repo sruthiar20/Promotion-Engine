@@ -1,0 +1,11 @@
+{
+  "version": "1",
+  "name": "Promotion Engine API Tests",
+  "description": "Complete API test suite for the Promotion Engine",
+  "collections": [
+    {
+      "name": "Get Promotion Tests",
+      "path": "Get-Promotion"
+    }
+  ]
+} 

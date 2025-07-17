@@ -1,17 +1,27 @@
 meta {
   name: end_date_before_start_date_validation
   type: http
-  seq: 3
+  seq: 1
 }
 
 get {
-  url: http://localhost:8080/admin/promotions/searchById?status=active&product-id=SKU-PRO-001&starts_at={{start_date}}&ends_at={{end_date}}
+  url: http://localhost:8080/admin/promotions/searchById
+  body: json
   auth: none
 }
 
 headers {
   Content-Type: application/json
   Accept: application/json
+}
+
+body:json {
+  {
+    "status": "active",
+    "product-id": "SKU-PRO-001",
+    "starts_at": "{{start_date}}",
+    "ends_at": "{{end_date}}"
+  }
 }
 
 script:pre-request {

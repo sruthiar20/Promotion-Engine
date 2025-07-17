@@ -1,0 +1,84 @@
+meta {
+  name: category_id_not_found
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8080/admin/promotions/searchById
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "status": "active",
+    "category-id": "NON-EXISTENT-CATEGORY-ID"
+  }
+}
+
+assert {
+  res.status: eq 404
+}
+
+tests {
+  test("2.1 Should return 404 when category-id not found", function() {
+    expect(res.status).to.equal(404,
+      "Expected 404 Not Found status for non-existent category-id");
+  });
+
+  test("2.2 Should validate response headers", function() {
+    expect(res.headers["content-type"]).to.match(/application\/json/,
+      "Expected JSON content type in response");
+  });
+
+  test("2.3 Should have proper error response structure", function() {
+    expect(res.body).to.have.property('type');
+    expect(res.body).to.have.property('message');
+    expect(res.body).to.have.property('details').that.is.an('array');
+  });
+
+  test("2.4 Should have correct error type", function() {
+    expect(res.body.type).to.equal("not_found_error",
+      "Expected error type to be not_found_error");
+  });
+
+  test("2.5 Should have meaningful error message", function() {
+    expect(res.body.message).to.equal("Promotion not found",
+      "Expected meaningful error message");
+  });
+
+  test("2.6 Should include field-specific error details", function() {
+    expect(res.body.details).to.have.length.greaterThan(0,
+      "Expected error details array to not be empty");
+    
+    const categoryError = res.body.details.find(detail => detail.field === "category-id");
+    expect(categoryError).to.exist;
+    expect(categoryError.message).to.include("NON-EXISTENT-CATEGORY-ID",
+      "Expected error message to include the category-id that was not found");
+  });
+
+  test("2.7 Should validate complete error response format", function() {
+    // Verify the error follows the standard format from functional context
+    expect(res.body).to.deep.include({
+      type: "not_found_error",
+      message: "Promotion not found"
+    });
+    
+    expect(res.body.details[0]).to.have.property('field', 'category-id');
+    expect(res.body.details[0].message).to.include('No active promotion found');
+  });
+
+  test("2.8 Should differentiate between product and category not found", function() {
+    // This test ensures the error correctly identifies the field type
+    expect(res.body.details[0].field).to.equal('category-id',
+      "Expected field to be category-id, not product-id");
+    expect(res.body.details[0].message).to.include('category-id',
+      "Expected error message to mention category-id specifically");
+  });
+} 

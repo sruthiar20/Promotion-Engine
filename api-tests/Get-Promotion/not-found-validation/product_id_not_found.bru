@@ -1,0 +1,76 @@
+meta {
+  name: product_id_not_found
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8080/admin/promotions/searchById
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "status": "active",
+    "product-id": "NON-EXISTENT-PRODUCT-ID"
+  }
+}
+
+assert {
+  res.status: eq 404
+}
+
+tests {
+  test("1.1 Should return 404 when product-id not found", function() {
+    expect(res.status).to.equal(404,
+      "Expected 404 Not Found status for non-existent product-id");
+  });
+
+  test("1.2 Should validate response headers", function() {
+    expect(res.headers["content-type"]).to.match(/application\/json/,
+      "Expected JSON content type in response");
+  });
+
+  test("1.3 Should have proper error response structure", function() {
+    expect(res.body).to.have.property('type');
+    expect(res.body).to.have.property('message');
+    expect(res.body).to.have.property('details').that.is.an('array');
+  });
+
+  test("1.4 Should have correct error type", function() {
+    expect(res.body.type).to.equal("not_found_error",
+      "Expected error type to be not_found_error");
+  });
+
+  test("1.5 Should have meaningful error message", function() {
+    expect(res.body.message).to.equal("Promotion not found",
+      "Expected meaningful error message");
+  });
+
+  test("1.6 Should include field-specific error details", function() {
+    expect(res.body.details).to.have.length.greaterThan(0,
+      "Expected error details array to not be empty");
+    
+    const productError = res.body.details.find(detail => detail.field === "product-id");
+    expect(productError).to.exist;
+    expect(productError.message).to.include("NON-EXISTENT-PRODUCT-ID",
+      "Expected error message to include the product-id that was not found");
+  });
+
+  test("1.7 Should validate complete error response format", function() {
+    // Verify the error follows the standard format from functional context
+    expect(res.body).to.deep.include({
+      type: "not_found_error",
+      message: "Promotion not found"
+    });
+    
+    expect(res.body.details[0]).to.have.property('field', 'product-id');
+    expect(res.body.details[0].message).to.include('No active promotion found');
+  });
+} 

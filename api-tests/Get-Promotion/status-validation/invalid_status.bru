@@ -5,13 +5,21 @@ meta {
 }
 
 get {
-  url: http://localhost:8080/admin/promotions/searchById?status=inactive&product-id=SKU-PRO-001
+  url: http://localhost:8080/admin/promotions/searchById
+  body: json
   auth: none
 }
 
 headers {
   Content-Type: application/json
   Accept: application/json
+}
+
+body:json {
+  {
+    "status": "inactive",
+    "product-id": "SKU-PRO-001"
+  }
 }
 
 assert {

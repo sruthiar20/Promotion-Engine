@@ -1,9 +1,9 @@
-sonar.projectKey=Promotions-Service
+sonar.projectKey=Promotion-Engine
 
-sonar.projectName=Promotions Service
+sonar.projectName=Promotion Engine
 
 sonar.host.url=http://localhost:9000
 
-sonar.token=sqp_7026802fa9580b2ebfbaf796d88a6dcf9884e864
+sonar.token=sqp_b5f8c6c93e3e002ee36ae4e7436de875b66671df
 
 sonar.exclusions=**/domain/**,**/dto/**,**/config/**,**/exceptions/**"

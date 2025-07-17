@@ -1,0 +1,3 @@
+Ì13:05:27.555 [Test worker] INFO com.promotion.engine.controller.PromotionController -- Received request to search promotions with request: com.promotion.engine.dto.request.PromotionSearchRequest@35e75f7a
+Ì13:05:27.605 [Test worker] INFO com.promotion.engine.controller.PromotionController -- Received request to search promotions with request: com.promotion.engine.dto.request.PromotionSearchRequest@28519bfb
+Ì13:05:27.609 [Test worker] INFO com.promotion.engine.controller.PromotionController -- Received request to search promotions with request: com.promotion.engine.dto.request.PromotionSearchRequest@4d065e1a

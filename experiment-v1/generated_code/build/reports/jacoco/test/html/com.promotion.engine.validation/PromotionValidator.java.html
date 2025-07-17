@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PromotionValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">promotion-engine</a> &gt; <a href="index.source.html" class="el_package">com.promotion.engine.validation</a> &gt; <span class="el_source">PromotionValidator.java</span></div><h1>PromotionValidator.java</h1><pre class="source lang-java linenums">package com.promotion.engine.validation;
+
+import com.promotion.engine.dto.request.PromotionSearchRequest;
+import com.promotion.engine.exception.ValidationError;
+
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Validator for promotion requests.
+ * Implements all complex validation rules defined in the functional context.
+ */
+<span class="fc" id="L16">public class PromotionValidator implements ConstraintValidator&lt;ValidPromotion, PromotionSearchRequest&gt; {</span>
+
+    private static final String STATUS_ACTIVE = &quot;active&quot;;
+
+    @Override
+    public void initialize(ValidPromotion constraintAnnotation) {
+        // No initialization needed
+<span class="nc" id="L23">    }</span>
+
+    @Override
+    public boolean isValid(PromotionSearchRequest request, ConstraintValidatorContext context) {
+<span class="fc" id="L27">        List&lt;ValidationError&gt; errors = new ArrayList&lt;&gt;();</span>
+        
+        // Disable default constraint violation creation
+<span class="fc" id="L30">        context.disableDefaultConstraintViolation();</span>
+        
+        // Check status (required and must be &quot;active&quot;)
+<span class="fc" id="L33">        validateStatus(request, errors);</span>
+        
+        // Check that either product-id or category-id is provided, but not both
+<span class="fc" id="L36">        validateProductOrCategoryId(request, errors);</span>
+        
+        // Date validations
+<span class="fc" id="L39">        validateDates(request, errors);</span>
+        
+        // Add all constraint violations
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        for (ValidationError error : errors) {</span>
+<span class="fc" id="L43">            context.buildConstraintViolationWithTemplate(error.getMessage())</span>
+<span class="fc" id="L44">                  .addPropertyNode(error.getField())</span>
+<span class="fc" id="L45">                  .addConstraintViolation();</span>
+<span class="fc" id="L46">        }</span>
+        
+<span class="fc" id="L48">        return errors.isEmpty();</span>
+    }
+    
+    private void validateStatus(PromotionSearchRequest request, List&lt;ValidationError&gt; errors) {
+<span class="fc" id="L52">        String status = request.getStatus();</span>
+        
+<span class="pc bpc" id="L54" title="1 of 4 branches missed.">        if (status == null || status.trim().isEmpty()) {</span>
+<span class="fc" id="L55">            errors.add(new ValidationError(&quot;status&quot;, &quot;Status is required&quot;));</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        } else if (!STATUS_ACTIVE.equalsIgnoreCase(status)) {</span>
+<span class="fc" id="L57">            errors.add(new ValidationError(&quot;status&quot;, &quot;status value must be as active&quot;));</span>
+        }
+<span class="fc" id="L59">    }</span>
+    
+    private void validateProductOrCategoryId(PromotionSearchRequest request, List&lt;ValidationError&gt; errors) {
+<span class="fc" id="L62">        String productId = request.getProductId();</span>
+<span class="fc" id="L63">        String categoryId = request.getCategoryId();</span>
+        
+<span class="fc bfc" id="L65" title="All 6 branches covered.">        if (productId != null &amp;&amp; !productId.trim().isEmpty() &amp;&amp; </span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">            categoryId != null &amp;&amp; !categoryId.trim().isEmpty()) {</span>
+            // Both product-id and category-id provided (mutually exclusive)
+<span class="fc" id="L68">            errors.add(new ValidationError(&quot;product_id, category_id&quot;, </span>
+                &quot;Fields product_id and category_id are mutually_exclusive_fields — only one must be provided&quot;));
+<span class="fc bfc" id="L70" title="All 6 branches covered.">        } else if ((productId == null || productId.trim().isEmpty()) &amp;&amp; </span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">                  (categoryId == null || categoryId.trim().isEmpty())) {</span>
+            // Neither product-id nor category-id provided
+<span class="fc" id="L73">            errors.add(new ValidationError(&quot;product_id, category_id&quot;, </span>
+                &quot;Either product_id or category_id must be provided&quot;));
+        } else {
+            // One of them is provided, validate it's not empty
+<span class="pc bpc" id="L77" title="1 of 4 branches missed.">            if (productId != null &amp;&amp; productId.trim().isEmpty()) {</span>
+<span class="nc" id="L78">                errors.add(new ValidationError(&quot;product_id&quot;, &quot;product_id must be a valid string&quot;));</span>
+            }
+            
+<span class="pc bpc" id="L81" title="1 of 4 branches missed.">            if (categoryId != null &amp;&amp; categoryId.trim().isEmpty()) {</span>
+<span class="nc" id="L82">                errors.add(new ValidationError(&quot;category_id&quot;, &quot;category_id must be a valid string&quot;));</span>
+            }
+        }
+<span class="fc" id="L85">    }</span>
+    
+    private void validateDates(PromotionSearchRequest request, List&lt;ValidationError&gt; errors) {
+<span class="fc" id="L88">        Instant startsAt = request.getStartsAt();</span>
+<span class="fc" id="L89">        Instant endsAt = request.getEndsAt();</span>
+        
+        // Both dates are optional, but if provided they must be valid
+<span class="pc bpc" id="L92" title="2 of 4 branches missed.">        if (startsAt != null &amp;&amp; endsAt != null) {</span>
+            // Validate that end date is after start date
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            if (endsAt.isBefore(startsAt)) {</span>
+<span class="fc" id="L95">                errors.add(new ValidationError(&quot;ends_at&quot;, &quot;End date must be after start date&quot;));</span>
+            }
+        }
+        
+        // Note: &quot;Start date not in the past&quot; validation is for creation, not search
+        // This is a search API, so we allow searching for past promotions
+<span class="fc" id="L101">    }</span>
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

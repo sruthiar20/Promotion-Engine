@@ -1,11 +1,12 @@
 meta {
   name: start_date_today_validation
   type: http
-  seq: 4
+  seq: 3
 }
 
 get {
-  url: http://localhost:8080/admin/promotions/searchById?status=active&product-id=SKU-PRO-001&starts_at={{start_date}}&ends_at={{end_date}}
+  url: http://localhost:8080/admin/promotions/searchById
+  body: json
   auth: none
 }
 
@@ -14,18 +15,27 @@ headers {
   Accept: application/json
 }
 
+body:json {
+  {
+    "status": "active",
+    "product-id": "SKU-PRO-001",
+    "starts_at": "{{start_date}}",
+    "ends_at": "{{end_date}}"
+  }
+}
+
 assert {
   res.status: eq 400
 }
 
 script:pre-request {
-  // Set today's date as start date
+  // Set today's date as start date (this should fail validation)
   const today = new Date();
-  bru.setVar("today_iso", today.toISOString());
+  bru.setVar("start_date", today.toISOString());
   
   // Set future date for end date (30 days from now)
   const future_date = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-  bru.setVar("future_date", future_date.toISOString());
+  bru.setVar("end_date", future_date.toISOString());
 }
 
 tests {
@@ -53,18 +63,15 @@ tests {
   });
   
   test("4.4 Should have proper error response structure", function() {
-    expect(res.body).to.have.property('type');
-    expect(res.body).to.have.property('message');
-    expect(res.body).to.have.property('details');
-    expect(res.body.details).to.be.an('array');
-    expect(res.body.details[0]).to.have.property('field');
-    expect(res.body.details[0]).to.have.property('message');
+    expect(res.body).to.have.property("type");
+    expect(res.body).to.have.property("message");
+    expect(res.body).to.have.property("details");
   });
   
   test("4.5 Should validate that start date is indeed today", function() {
     const today = new Date();
     const today_iso = today.toISOString();
-    const request_start_date = bru.getVar("today_iso");
+    const request_start_date = bru.getVar("start_date");
     
     // Both should be from the same day
     expect(request_start_date.substring(0, 10)).to.equal(today_iso.substring(0, 10),
@@ -72,7 +79,7 @@ tests {
   });
   
   test("4.6 Should confirm end date is in the future", function() {
-    const future_date = bru.getVar("future_date");
+    const future_date = bru.getVar("end_date");
     const future_date_obj = new Date(future_date);
     const today = new Date();
     

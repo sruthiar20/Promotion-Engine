@@ -5,13 +5,23 @@ meta {
 }
 
 get {
-  url: http://localhost:8080/admin/promotions/searchById?status=active&product-id=SKU-PRO-001&starts_at=2026-07-01&ends_at=2026-08-31
+  url: http://localhost:8080/admin/promotions/searchById
+  body: json
   auth: none
 }
 
 headers {
   Content-Type: application/json
   Accept: application/json
+}
+
+body:json {
+  {
+    "status": "active",
+    "product-id": "SKU-PRO-001",
+    "starts_at": "2026-07-01",
+    "ends_at": "2026-08-31"
+  }
 }
 
 assert {

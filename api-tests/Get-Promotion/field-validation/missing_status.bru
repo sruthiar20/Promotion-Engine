@@ -1,17 +1,24 @@
 meta {
   name: missing_status_validation
   type: http
-  seq: 5
+  seq: 4
 }
 
 get {
-  url: http://localhost:8080/admin/promotions/searchById?product-id=SKU-PRO-001
+  url: http://localhost:8080/admin/promotions/searchById
+  body: json
   auth: none
 }
 
 headers {
   Content-Type: application/json
   Accept: application/json
+}
+
+body:json {
+  {
+    "product-id": "SKU-PRO-001"
+  }
 }
 
 assert {
